@@ -26,12 +26,24 @@ Sterownik CCID musi znać VID/PID urządzenia. Dodaj identyfikatory Raspberry Pi
 
 **Plik:** `/usr/lib/pcsc/drivers/ifd-ccid.bundle/Contents/Info.plist`
 
-Dodaj do odpowiednich tablic:
+Dodaj wpisy na pierwszej pozycji w trzech tablicach (`ifdVendorID`, `ifdProductID`, `ifdFriendlyName`):
 
-| Pole | Wartość |
-|------|---------|
-| `ifdVendorID` | `0x2E8A` |
-| `ifdProductID` | `0x10FE` |
+```xml
+<key>ifdVendorID</key>
+<array>
+    <string>0x2E8A</string>
+    <!-- reszta wpisów... -->
+
+<key>ifdProductID</key>
+<array>
+    <string>0x10FE</string>
+    <!-- reszta wpisów... -->
+
+<key>ifdFriendlyName</key>
+<array>
+    <string>Pico Key</string>
+    <!-- reszta wpisów... -->
+```
 
 Po edycji zrestartuj serwis:
 
@@ -41,29 +53,30 @@ sudo systemctl restart pcscd
 
 Weryfikacja — urządzenie powinno być widoczne:
 
-```bash
-opensc-tool -l
+```
+$ opensc-tool -l
+# Detected readers (pcsc)
+Nr.  Card  Features  Name
+0    Yes             Pico Key [Pico Key CCID OTP FIDO Interfac] (8D94997D9577EE53) 00 00
+1    No              Broadcom Corp 58200 [Contacted SmartCard] (0123456789ABCD) 01 00
+2    No              Broadcom Corp 58200 [Contactless SmartCard] (0123456789ABCD) 02 00
 ```
 
 ## 2. Konfiguracja PHY (LED + przycisk)
 
-### Wybór rescue appletu
+SELECT rescue appletu i zapis PHY można wykonać jedną komendą:
 
-```bash
-opensc-tool -s "00A40400 08 A0583FC19B7E4F21"
+```
+$ opensc-tool -s "00A40400 08 A0583FC19B7E4F21" -s "801C0100 09 0401160C010308010F"
+Using reader with a card: Pico Key [Pico Key CCID OTP FIDO Interfac] (8D94997D9577EE53) 00 00
+Sending: 00 A4 04 00 08 A0 58 3F C1 9B 7E 4F 21
+Received (SW1=0x90, SW2=0x00):
+01 02 07 04 8D 94 99 7D 95 77 EE 53 .......}.w.S
+Sending: 80 1C 01 00 09 04 01 16 0C 01 03 08 01 0F
+Received (SW1=0x90, SW2=0x00)
 ```
 
 AID rescue appletu: `A0 58 3F C1 9B 7E 4F 21`
-
-Oczekiwana odpowiedź: `SW1=0x90, SW2=0x00`
-
-### Zapis konfiguracji PHY
-
-```bash
-opensc-tool -s "801C0100 09 0401160C010308010F"
-```
-
-Oczekiwana odpowiedź: `SW1=0x90, SW2=0x00`
 
 ### Struktura komendy APDU
 
@@ -85,12 +98,17 @@ Oczekiwana odpowiedź: `SW1=0x90, SW2=0x00`
 
 ## 3. Weryfikacja
 
-```bash
-# Lista urządzeń CCID
-opensc-tool -l
+```
+$ opensc-tool -l
+# Detected readers (pcsc)
+Nr.  Card  Features  Name
+0    Yes             Pico Key [Pico Key CCID OTP FIDO Interfac] (8D94997D9577EE53) 00 00
 
-# SELECT rescue applet (odczyt aktualnej konfiguracji)
-opensc-tool -s "00A40400 08 A0583FC19B7E4F21"
+$ opensc-tool -s "00A40400 08 A0583FC19B7E4F21"
+Using reader with a card: Pico Key [Pico Key CCID OTP FIDO Interfac] (8D94997D9577EE53) 00 00
+Sending: 00 A4 04 00 08 A0 58 3F C1 9B 7E 4F 21
+Received (SW1=0x90, SW2=0x00):
+01 02 07 04 8D 94 99 7D 95 77 EE 53 .......}.w.S
 ```
 
 Po poprawnej konfiguracji:
