@@ -1,3 +1,6 @@
 [submodule "pico-keys-sdk"]
 	path = pico-keys-sdk
 	url = https://github.com/polhenarejos/pico-keys-sdk
+[submodule "pico-openpgp"]
+	path = pico-openpgp
+	url = https://github.com/pgasidlo/pico-openpgp
